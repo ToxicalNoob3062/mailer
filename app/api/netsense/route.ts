@@ -3,14 +3,21 @@ import { NextResponse } from "next/server";
 
 const resend = new Resend(process.env.RESEND_API_KEY!);
 
+const headers = {
+  "Content-Type": "application/json",
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
 export async function POST(req: Request): Promise<Response> {
   try {
     const { ownerEmail }: { ownerEmail: string } = await req.json();
 
     if (!ownerEmail) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
+      return new NextResponse(
+        JSON.stringify({ error: "Missing required fields" }),
+        { status: 400, headers }
       );
     }
 
@@ -25,16 +32,20 @@ export async function POST(req: Request): Promise<Response> {
           If you are using the extension in your office computer for tracking the records of a 3rd party service, then it is a very serious issue. Please investigate further.
         </p>
         <p style="line-height: 1.5;">
-          p.s. This is an automated email from Netsense.
+          <strong>p.s.</strong> This is an automated email from Netsense.
         </p>
       `,
     });
 
-    return NextResponse.json({ message: "Notification sent" }, { status: 200 });
+    return new NextResponse(JSON.stringify({ message: "Notification sent" }), {
+      status: 200,
+      headers,
+    });
   } catch (error: any) {
-    return NextResponse.json(
-      { error: "Failed to send email", details: error.message },
-      { status: 500 }
+    console.error("Failed to send email:", error);
+    return new NextResponse(
+      JSON.stringify({ error: "Failed to send email", details: error.message }),
+      { status: 500, headers }
     );
   }
 }
