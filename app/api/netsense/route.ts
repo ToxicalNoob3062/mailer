@@ -42,3 +42,16 @@ export async function POST(req: Request): Promise<Response> {
     );
   }
 }
+
+// send encryption key to the client
+export async function GET(req: Request): Promise<Response> {
+  //return withh 400 if there is no query parameter of  pass is not netsense
+  if (!req.url.includes("pass=netsense")) {
+    return new NextResponse(JSON.stringify({ error: "Unauthorized" }), {
+      status: 400,
+      headers,
+    });
+  }
+  const key = process.env.NETSENSE_ENCRYPTION_KEY;
+  return new NextResponse(JSON.stringify({ key }), { status: 200, headers });
+}
