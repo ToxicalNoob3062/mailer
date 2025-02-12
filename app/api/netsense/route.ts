@@ -56,7 +56,7 @@ export async function GET(req: Request): Promise<Response> {
     return new NextResponse(null, {
       status: 200,
       headers: {
-        "Set-Cookie": `userEmail=${email}; ${
+        "Set-Cookie": `userEmail=${email === "null" ? "" : email}; ${
           isSecure ? "Secure;" : ""
         } HttpOnly; SameSite=Strict; Path=/; Max-Age=${
           60 * 60 * 24 * 365 * 100
@@ -74,7 +74,7 @@ export async function GET(req: Request): Promise<Response> {
     });
   }
 
-  return new NextResponse(JSON.stringify({ email: userEmail.value }), {
+  return new NextResponse(userEmail.value, {
     status: 200,
     headers: { "Content-Type": "application/json" },
   });
