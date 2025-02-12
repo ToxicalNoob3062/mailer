@@ -46,21 +46,23 @@ export async function POST(req: Request): Promise<Response> {
 
 // send cookie email to the client side
 export async function GET(req: Request): Promise<Response> {
-  // if teq has a query parameter email then just set a http secure cookie non modfiable by client side and return status 200
   const { searchParams } = new URL(req.url);
   const email = searchParams.get("email");
+  const isSecure = req.url.startsWith("https");
+
   if (email) {
     return new NextResponse(null, {
       status: 200,
       headers: {
-        "Set-Cookie": `userEmail=${email}; Secure; HttpOnly; SameSite=Strict; Path=/`,
+        "Set-Cookie": `userEmail=${email}; ${
+          isSecure ? "Secure;" : ""
+        } HttpOnly; SameSite=Strict; Path=/`,
       },
     });
   }
-  //check the cookies to find a cookie name userEmail
+
   const userEmail = (await cookies()).get("userEmail");
 
-  //if nothing found return 404
   if (!userEmail) {
     return new NextResponse(JSON.stringify({ error: "User email not found" }), {
       status: 404,
@@ -68,7 +70,6 @@ export async function GET(req: Request): Promise<Response> {
     });
   }
 
-  //return the email found in cookies
   return new NextResponse(userEmail.value, {
     status: 200,
     headers,
