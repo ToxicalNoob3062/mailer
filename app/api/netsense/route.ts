@@ -48,7 +48,9 @@ export async function POST(req: Request): Promise<Response> {
 export async function GET(req: Request): Promise<Response> {
   const { searchParams } = new URL(req.url);
   const email = searchParams.get("email");
-  const isSecure = req.url.startsWith("https");
+
+  // Detect if request is secure
+  const isSecure = req.headers.get("x-forwarded-proto") === "https";
 
   if (email) {
     return new NextResponse(null, {
@@ -56,7 +58,9 @@ export async function GET(req: Request): Promise<Response> {
       headers: {
         "Set-Cookie": `userEmail=${email}; ${
           isSecure ? "Secure;" : ""
-        } HttpOnly; SameSite=Strict; Path=/`,
+        } HttpOnly; SameSite=Strict; Path=/; Max-Age=${
+          60 * 60 * 24 * 365 * 100
+        }`, // 100 years
       },
     });
   }
@@ -66,12 +70,12 @@ export async function GET(req: Request): Promise<Response> {
   if (!userEmail) {
     return new NextResponse(JSON.stringify({ error: "User email not found" }), {
       status: 404,
-      headers,
+      headers: { "Content-Type": "application/json" },
     });
   }
 
-  return new NextResponse(userEmail.value, {
+  return new NextResponse(JSON.stringify({ email: userEmail.value }), {
     status: 200,
-    headers,
+    headers: { "Content-Type": "application/json" },
   });
 }
