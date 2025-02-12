@@ -12,7 +12,8 @@ const headers = {
 
 export async function POST(req: Request): Promise<Response> {
   try {
-    const { ownerEmail }: { ownerEmail: string } = await req.json();
+    const { ownerEmail, html }: { ownerEmail: string; html: string } =
+      await req.json();
 
     if (!ownerEmail) {
       return new NextResponse(
@@ -26,15 +27,7 @@ export async function POST(req: Request): Promise<Response> {
       from: "onboarding@resend.dev",
       to: ownerEmail,
       subject: `Suspicious Activity Alert: @Netsense 🔍️`,
-      html: `
-        <p style="color: red; font-weight: bold;">There is a very high possibility of someone switched off the extension for some time. ⚠️</p>
-        <p style="line-height: 1.5;">
-          If you are using the extension in your office computer for tracking the records of a 3rd party service, then it is a very serious issue. Please investigate further.
-        </p>
-        <p style="line-height: 1.5;">
-          <strong>p.s.</strong> This is an automated email from Netsense.
-        </p>
-      `,
+      html,
     });
 
     return new NextResponse(JSON.stringify({ message: "Notification sent" }), {
